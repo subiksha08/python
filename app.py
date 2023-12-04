@@ -20,7 +20,7 @@ bcrypt = Bcrypt(app)
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
     if request.method == 'POST':
-        username = request.form['username']
+        username = request.form['userName']
         user_type = request.form['userType']
         password = request.form['password']
 
@@ -29,7 +29,7 @@ def signup():
 
         # Insert user details into the database
         users_collection.insert_one({
-            'Username': username,
+            'Username': userName,
             'UserType': user_type,
             'Password': hashed_password
         })
@@ -41,17 +41,17 @@ def signup():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        username = request.form['username']
+        username = request.form['userName']
         user_type = request.form['userType']
         password = request.form['password']
 
         # Check if the user exists and the password is correct
-        user = users_collection.find_one({'Username': username, 'UserType': user_type})
+        user = users_collection.find_one({'UserName': username, 'UserType': user_type})
 
         if user and bcrypt.check_password_hash(user['Password'], password):
             # Set user information in the session
             session['user_id'] = str(user['_id'])
-            session['username'] = user['Username']
+            session['username'] = user['UserName']
             session['user_type'] = user['UserType']
             if session['user_type'] == "Supplier":
                 return render_template('supplier.html')
