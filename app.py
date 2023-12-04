@@ -5,7 +5,7 @@ import json
 from pymongo import MongoClient
 
 # Replace YOUR_CONNECTION_STRING with your MongoDB Atlas connection string
-MONGO_URI = 'YOUR_CONNECTION_STRING'
+MONGO_URI = 'mongodb+srv://subiksha:<password>@cluster0.uhp5uuo.mongodb.net/?retryWrites=true&w=majority'
 client = MongoClient(MONGO_URI)
 
 db = client['SupplyChainManager']
