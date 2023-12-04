@@ -1,92 +1,65 @@
-from flask import Flask
-from flask import render_template
-from flask import request
-import mysql.connector
+from flask import Flask, render_template, request, redirect, url_for, session, jsonify
+from flask_bcrypt import Bcrypt
 from flask_cors import CORS
 import json
-mysql = mysql.connector.connect(user='web', password='webPass',
-  host='127.0.0.1',
-  database='student')
- 
-from logging.config import dictConfig
- 
-dictConfig({
-    'version': 1,
-    'formatters': {'default': {
-        'format': '[%(asctime)s] %(levelname)s in %(module)s: %(message)s',
-    }},
-    'handlers': {'wsgi': {
-        'class': 'logging.StreamHandler',
-        'stream': 'ext://flask.logging.wsgi_errors_stream',
-        'formatter': 'default'
-    }},
-    'root': {
-        'level': 'INFO',
-        'handlers': ['wsgi']
-    }
-})
+from pymongo import MongoClient
+
+# Replace YOUR_CONNECTION_STRING with your MongoDB Atlas connection string
+MONGO_URI = 'YOUR_CONNECTION_STRING'
+client = MongoClient(MONGO_URI)
+
+db = client['SupplyChainManager']
+users_collection = db['User']
+products_collection = db['Product']
+
 app = Flask(__name__)
+app.secret_key = 'supply_chain_secret_key'
 CORS(app)
-# My SQL Instance configurations
-# Change the HOST IP and Password to match your instance configurations
- 
-@app.route("/test")#URL leading to method
-def test(): # Name of the method
-  return("Hello World!<BR/>THIS IS ANOTHER TEST!") #indent this line
- 
-@app.route("/yest")#URL leading to method
-def yest(): # Name of the method
-  return("Hello World!<BR/>THIS IS YET ANOTHER TEST!") #indent this line
- 
-@app.route("/add", methods=['GET', 'POST']) #Add Student
-def add():
-  if request.method == 'POST':
-    name = request.form['name']
-    email = request.form['email']
-    print(name,email)
-    cur = mysql.cursor() #create a connection to the SQL instance
-    s='''INSERT INTO students(studentName, email) VALUES('{}','{}');'''.format(name,email)
-    app.logger.info(s)
-    cur.execute(s)
-    mysql.commit()
-  else:
-    return render_template('add.html')
- 
-  return '{"Result":"Success"}'
-@app.route("/update", methods=['GET', 'POST']) # Update Student
-def update():
+bcrypt = Bcrypt(app)
+
+@app.route('/signup', methods=['GET', 'POST'])
+def signup():
     if request.method == 'POST':
-        studentID = request.form['id']
-        new_name = request.form['new_name']
-        new_email = request.form['new_email']
- 
-        cur = mysql.cursor()
-        s = '''UPDATE students SET studentName = '{}', email = '{}' WHERE studentID = {};'''.format(new_name, new_email, studentID)
-        app.logger.info(s)
-        cur.execute(s)
-        mysql.commit()
- 
-        return '{"Result":"Success"}'
-    else:
-        return render_template('update.html')
-@app.route("/") #Default - Show Data
-def hello(): # Name of the method
-  cur = mysql.cursor() #create a connection to the SQL instance
-  cur.execute('''SELECT * FROM students''') # execute an SQL statment
-  rv = cur.fetchall() #Retreive all rows returend by the SQL statment
-  Results=[]
-  for row in rv: #Format the Output Results and add to return string
-    Result={}
-    Result['Name']=row[0].replace('\n',' ')
-    Result['Email']=row[1]
-    Result['ID']=row[2]
-    Results.append(Result)
-  response={'Results':Results, 'count':len(Results)}
-  ret=app.response_class(
-    response=json.dumps(response),
-    status=200,
-    mimetype='application/json'
-  )
-  return ret #Return the data in a string format
-if __name__ == "__main__":
-  app.run(host='0.0.0.0',port='8080', ssl_context=('cert.pem', 'privkey.pem')) #Run the flask app at port 8080
+        username = request.form['username']
+        user_type = request.form['userType']
+        password = request.form['password']
+
+        # Hash the password before storing it
+        hashed_password = bcrypt.generate_password_hash(password)
+
+        # Insert user details into the database
+        users_collection.insert_one({
+            'Username': username,
+            'UserType': user_type,
+            'Password': hashed_password
+        })
+
+        return 'Signup successful!'
+
+    return render_template('signup.html')
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        username = request.form['username']
+        user_type = request.form['userType']
+        password = request.form['password']
+
+        # Check if the user exists and the password is correct
+        user = users_collection.find_one({'Username': username, 'UserType': user_type})
+
+        if user and bcrypt.check_password_hash(user['Password'], password):
+            # Set user information in the session
+            session['user_id'] = str(user['_id'])
+            session['username'] = user['Username']
+            session['user_type'] = user['UserType']
+            if session['user_type'] == "Supplier":
+                return render_template('supplier.html')
+            else:
+                return render_template('customer.html')
+        else:
+            return 'Invalid username or password'
+
+    return render_template('login.html')
+
+# The rest of your routes (e.g., /, /supplier, /update, /load, /delete) should be modified similarly.
