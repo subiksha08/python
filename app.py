@@ -29,7 +29,7 @@ def signup():
 
         # Insert user details into the database
         users_collection.insert_one({
-            'Username': userName,
+            'UserName': userName,
             'UserType': user_type,
             'Password': hashed_password
         })
