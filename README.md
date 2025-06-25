@@ -36,7 +36,7 @@ A full-stack web application designed to simplify and streamline supply chain op
 
 ---
 
-**Authentication Flow**
+## 🔐 Authentication Flow
 
 Users can sign up as a Supplier or Client
 
@@ -46,7 +46,7 @@ Upon login, users are redirected to their respective dashboards
 
 ---
 
-**Security Notes**
+## ⚠️ Security Notes
 
 Passwords are never stored in plain text (Bcrypt-hashed)
 
@@ -56,11 +56,11 @@ Sessions used to manage authenticated state
 
 ---
 
-**📜 License**
+## 📜 License
 This project is licensed under the MIT License — feel free to use, fork, and enhance it.
 
 ---
 
-**🙌 Acknowledgments**
+## 🙌 Acknowledgments
 Thanks to the open-source community and MongoDB Atlas for providing free tier access to scalable NoSQL databases.
 
