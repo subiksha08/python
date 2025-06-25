@@ -44,6 +44,8 @@ Credentials are securely stored with hashed passwords using Flask-Bcrypt
 
 Upon login, users are redirected to their respective dashboards
 
+---
+
 **Security Notes**
 
 Passwords are never stored in plain text (Bcrypt-hashed)
@@ -52,21 +54,12 @@ CORS enabled for controlled cross-origin access
 
 Sessions used to manage authenticated state
 
-## 🗂️ Project Structure
-
-supply-chain-management/
-│
-├── templates/
-│ ├── login.html
-│ ├── signup.html
-│ ├── supplier.html
-│ └── customer.html
-│
-├── app.py
-└── README.md
+---
 
 **📜 License**
 This project is licensed under the MIT License — feel free to use, fork, and enhance it.
+
+---
 
 **🙌 Acknowledgments**
 Thanks to the open-source community and MongoDB Atlas for providing free tier access to scalable NoSQL databases.
